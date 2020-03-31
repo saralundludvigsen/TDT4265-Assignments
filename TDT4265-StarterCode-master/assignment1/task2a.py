@@ -1,5 +1,6 @@
 import numpy as np
 import utils
+import math
 np.random.seed(1)
 
 
@@ -12,6 +13,9 @@ def pre_process_images(X: np.ndarray):
     """
     assert X.shape[1] == 784,\
         f"X.shape[1]: {X.shape[1]}, should be 784"
+    X = np.divide(X,255)
+    #X = np.append(X,0,1)
+    X = np.insert(X, 0, 1, axis=1)
     return X
 
 
@@ -32,7 +36,7 @@ class BinaryModel:
 
     def __init__(self, l2_reg_lambda: float):
         # Define number of input nodes
-        self.I = None
+        self.I = 785
         self.w = np.zeros((self.I, 1))
         self.grad = None
 
@@ -47,7 +51,13 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        return None
+        temp = self.w.transpose().dot(X.transpose())
+        size = X.shape[0]
+        y = np.ones((size,1))
+
+        for index in range(0, len(y)):
+            y[index] = 1/(1 + math.exp(-1*temp.transpose()[index]))
+        return y
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
@@ -61,6 +71,9 @@ class BinaryModel:
         self.grad = np.zeros_like(self.w)
         assert self.grad.shape == self.w.shape,\
             f"Grad shape: {self.grad.shape}, w: {self.w.shape}"
+        y_hat = outputs
+        y = targets 
+        self.grad = -(y - y_hat)*X
 
     def zero_grad(self) -> None:
         self.grad = None
