@@ -29,7 +29,15 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray) -> float:
     """
     assert targets.shape == outputs.shape,\
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
-    return 0
+
+    y_hat = outputs
+    y = targets 
+    N = y_hat.shape[0]
+    c = 0
+    for n in range(0,N):
+        c += y[n]*math.log(y_hat[n]) + (1-y[n])*math.log(1-y_hat[n])
+    c = -1/N*c
+    return c
 
 
 class BinaryModel:
@@ -51,12 +59,12 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        temp = self.w.transpose().dot(X.transpose())
+        #temp = self.w.dot(X.transpose())
         size = X.shape[0]
         y = np.ones((size,1))
-
+        temp = np.dot(self.w.transpose(), X.transpose()).transpose()
         for index in range(0, len(y)):
-            y[index] = 1/(1 + math.exp(-1*temp.transpose()[index]))
+            y[index] = 1/(1 + math.exp(-1*temp[index]))
         return y
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
@@ -73,7 +81,7 @@ class BinaryModel:
             f"Grad shape: {self.grad.shape}, w: {self.w.shape}"
         y_hat = outputs
         y = targets 
-        self.grad = -(y - y_hat)*X
+        self.grad = -np.dot(X.transpose(), y - y_hat)/(X.shape[0])
 
     def zero_grad(self) -> None:
         self.grad = None
