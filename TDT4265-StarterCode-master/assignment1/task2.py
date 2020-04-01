@@ -41,7 +41,6 @@ def train(
         Function that implements logistic regression through mini-batch
         gradient descent for the given hyperparameters
     """
-    print("Du er inne i train")
     global X_train, X_val, X_test
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
@@ -104,13 +103,13 @@ model, train_loss, val_loss, train_accuracy, val_accuracy = train(
     learning_rate=learning_rate,
     batch_size=batch_size,
     l2_reg_lambda=1)
-print("1 modell")
+
 model1, train_loss1, val_loss1, train_accuracy1, val_accuracy1 = train(
     num_epochs=num_epochs,
     learning_rate=learning_rate,
     batch_size=batch_size,
     l2_reg_lambda=0.1)
-print("2 modeller")
+
 model2, train_loss2, val_loss2, train_accuracy2, val_accuracy2 = train(
     num_epochs=num_epochs,
     learning_rate=learning_rate,
@@ -155,15 +154,15 @@ plt.savefig("binary_train_accuracy.png")
 plt.show()
 '''
 plt.figure(1)
-plt.ylim([0.93, .99])
-utils.plot_loss(train_accuracy, "Training Accuracy, l = 1")
+plt.ylim([0.4, .99])
+#utils.plot_loss(train_accuracy, "Training Accuracy, l = 1")
 utils.plot_loss(val_accuracy, "Validation Accuracy, l = 1")
-utils.plot_loss(train_accuracy1, "Training Accuracy, l = 0.1")
+#utils.plot_loss(train_accuracy1, "Training Accuracy, l = 0.1")
 utils.plot_loss(val_accuracy1, "Validation Accuracy, l = 0.1")
-utils.plot_loss(train_accuracy2, "Training Accuracy, l = 0.01")
+#utils.plot_loss(train_accuracy2, "Training Accuracy, l = 0.01")
 utils.plot_loss(val_accuracy2, "Validation Accuracy, l = 0.01")
-utils.plot_loss(train_accuracy3, "Training Accuracy, l = 0.001")
+#utils.plot_loss(train_accuracy3, "Training Accuracy, l = 0.001")
 utils.plot_loss(val_accuracy3, "Validation Accuracy, l = 0.001")
 plt.legend()
-plt.savefig("binary_train_accuracy.png")
+plt.savefig("binary_train_accuracy_task3b.png")
 plt.show()
