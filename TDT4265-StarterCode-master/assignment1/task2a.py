@@ -13,6 +13,7 @@ def pre_process_images(X: np.ndarray):
     """
     assert X.shape[1] == 784,\
         f"X.shape[1]: {X.shape[1]}, should be 784"
+    
     X = np.divide(X,255)
     #X = np.append(X,0,1)
     X = np.insert(X, 0, 1, axis=1)

@@ -41,6 +41,7 @@ def train(
         Function that implements logistic regression through mini-batch
         gradient descent for the given hyperparameters
     """
+    print("Du er inne i train")
     global X_train, X_val, X_test
     # Utility variables
     num_batches_per_epoch = X_train.shape[0] // batch_size
@@ -50,9 +51,12 @@ def train(
     train_accuracy = {}
     val_accuracy = {}
     model = BinaryModel(l2_reg_lambda)
-    X_train = pre_process_images(X_train)
-    X_test = pre_process_images(X_test)
-    X_val = pre_process_images(X_val)
+    if X_train.shape[1]==784:
+        X_train = pre_process_images(X_train)
+    if X_test.shape[1]==784:
+        X_test = pre_process_images(X_test)
+    if X_val.shape[1]==784:
+        X_val = pre_process_images(X_val)
 
     global_step = 0
     for epoch in range(num_epochs):
@@ -99,7 +103,24 @@ model, train_loss, val_loss, train_accuracy, val_accuracy = train(
     num_epochs=num_epochs,
     learning_rate=learning_rate,
     batch_size=batch_size,
-    l2_reg_lambda=l2_reg_lambda)
+    l2_reg_lambda=1)
+print("1 modell")
+model1, train_loss1, val_loss1, train_accuracy1, val_accuracy1 = train(
+    num_epochs=num_epochs,
+    learning_rate=learning_rate,
+    batch_size=batch_size,
+    l2_reg_lambda=0.1)
+print("2 modeller")
+model2, train_loss2, val_loss2, train_accuracy2, val_accuracy2 = train(
+    num_epochs=num_epochs,
+    learning_rate=learning_rate,
+    batch_size=batch_size,
+    l2_reg_lambda=0.01)
+model3, train_loss3, val_loss3, train_accuracy3, val_accuracy3 = train(
+    num_epochs=num_epochs,
+    learning_rate=learning_rate,
+    batch_size=batch_size,
+    l2_reg_lambda=0.001)
 
 print("Final Train Cross Entropy Loss:",
       cross_entropy_loss(Y_train, model.forward(X_train)))
@@ -113,7 +134,7 @@ print("Train accuracy:", calculate_accuracy(X_train, Y_train, model))
 print("Validation accuracy:", calculate_accuracy(X_val, Y_val, model))
 print("Test accuracy:", calculate_accuracy(X_test, Y_test, model))
 
-
+'''
 # Plot loss
 plt.figure(1)
 plt.ylim([0., .4]) 
@@ -132,4 +153,17 @@ utils.plot_loss(val_accuracy, "Validation Accuracy")
 plt.legend()
 plt.savefig("binary_train_accuracy.png")
 plt.show()
-
+'''
+plt.figure(1)
+plt.ylim([0.93, .99])
+utils.plot_loss(train_accuracy, "Training Accuracy, l = 1")
+utils.plot_loss(val_accuracy, "Validation Accuracy, l = 1")
+utils.plot_loss(train_accuracy1, "Training Accuracy, l = 0.1")
+utils.plot_loss(val_accuracy1, "Validation Accuracy, l = 0.1")
+utils.plot_loss(train_accuracy2, "Training Accuracy, l = 0.01")
+utils.plot_loss(val_accuracy2, "Validation Accuracy, l = 0.01")
+utils.plot_loss(train_accuracy3, "Training Accuracy, l = 0.001")
+utils.plot_loss(val_accuracy3, "Validation Accuracy, l = 0.001")
+plt.legend()
+plt.savefig("binary_train_accuracy.png")
+plt.show()
