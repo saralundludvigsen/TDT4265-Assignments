@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from task2a import cross_entropy_loss, BinaryModel, pre_process_images
 np.random.seed(0)
 
+def calc_L2_len(model: BinaryModel) -> float:
+    return (np.linalg.norm(model.w, ord=2))**2
 
 def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: BinaryModel) -> float: 
     """
@@ -153,6 +155,7 @@ plt.legend()
 plt.savefig("binary_train_accuracy.png")
 plt.show()
 '''
+'''
 plt.figure(1)
 plt.ylim([0.4, .99])
 #utils.plot_loss(train_accuracy, "Training Accuracy, l = 1")
@@ -165,4 +168,14 @@ utils.plot_loss(val_accuracy2, "Validation Accuracy, l = 0.01")
 utils.plot_loss(val_accuracy3, "Validation Accuracy, l = 0.001")
 plt.legend()
 plt.savefig("binary_train_accuracy_task3b.png")
+plt.show()
+'''
+plt.figure(4)
+objects = ('1', '0.1', '0.01','0.001')
+y_pos = np.arange(len(objects))
+weights = [calc_L2_len(model), calc_L2_len(model1),calc_L2_len(model2),calc_L2_len(model3)]
+plt.bar(y_pos, weights, tick_label=objects)
+plt.ylabel("L2")
+plt.xlabel("lambda")
+plt.savefig("binary_train_task3c.png")
 plt.show()
