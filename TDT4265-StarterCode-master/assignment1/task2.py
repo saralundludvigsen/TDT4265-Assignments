@@ -14,8 +14,20 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: BinaryModel) -
     Returns:
         Accuracy (float)
     """
+    number_of_predictions = X.shape[0]
+    number_of_rights = 0
+    y_hat = model.forward(X)
+
+    for index in range (0, number_of_predictions):
+        if y_hat[index] >= 0.5:
+            y_hat[index] = 1
+        else: 
+            y_hat[index] = 0
+
+        if y_hat[index] == targets[index]:
+            number_of_rights += 1
     # Task 2c
-    accuracy = 0.0
+    accuracy = number_of_rights/number_of_predictions
     return accuracy
 
 
