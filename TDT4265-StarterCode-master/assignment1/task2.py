@@ -91,10 +91,10 @@ X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_binary_dataset(
     category1, category2, validation_percentage)
 
 # hyperparameters
-num_epochs = 50
+num_epochs = 20
 learning_rate = 0.2
 batch_size = 128
-l2_reg_lambda = 0
+l2_reg_lambda = 0.1
 model, train_loss, val_loss, train_accuracy, val_accuracy = train(
     num_epochs=num_epochs,
     learning_rate=learning_rate,
@@ -132,3 +132,4 @@ utils.plot_loss(val_accuracy, "Validation Accuracy")
 plt.legend()
 plt.savefig("binary_train_accuracy.png")
 plt.show()
+

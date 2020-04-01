@@ -35,6 +35,10 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray) -> float:
     N = y_hat.shape[0]
     c = 0
     for n in range(0,N):
+        if y_hat[n] > 0.9999999:
+            y_hat[n] = 0.9999999
+        if y_hat[n] <= 0.0000001:
+            y_hat[n] = 0.0000001
         c += y[n]*math.log(y_hat[n]) + (1-y[n])*math.log(1-y_hat[n])
     c = -1/N*c
     return c
@@ -62,7 +66,9 @@ class BinaryModel:
         size = X.shape[0]
         y = np.ones((size,1))
         temp = np.dot(self.w.transpose(), X.transpose()).transpose()
+        
         for index in range(0, len(y)):
+            #print("math.exp(-1*temp[index]): ", math.exp(-1*temp[index]))
             y[index] = 1/(1 + math.exp(-1*temp[index]))
         return y
 
@@ -80,7 +86,7 @@ class BinaryModel:
             f"Grad shape: {self.grad.shape}, w: {self.w.shape}"
         y_hat = outputs
         y = targets 
-        self.grad = -np.dot(X.transpose(), y - y_hat)/(X.shape[0])
+        self.grad = -np.dot(X.transpose(), y - y_hat)/(X.shape[0]) + 2*self.l2_reg_lambda*self.w
 
     def zero_grad(self) -> None:
         self.grad = None
