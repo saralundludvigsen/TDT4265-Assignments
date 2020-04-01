@@ -54,13 +54,7 @@ def train(
     X_test = pre_process_images(X_test)
     X_val = pre_process_images(X_val)
 
-    train_loss_epoch = {}
-    val_loss_epoch = {}
-    train_accuracy_epoch = {}
-    val_accuracy_epoch = {}
     global_step = 0
-    global_epoch = 0
-
     for epoch in range(num_epochs):
         for step in range(num_batches_per_epoch):
             # Select our mini-batch of images / labels
@@ -87,12 +81,7 @@ def train(
                     X_val, Y_val, model)
 
             global_step += 1
-        train_loss_epoch[global_epoch] = np.mean(list(train_loss.values()))
-        val_loss_epoch[global_epoch] = np.mean(list(val_loss.values()))
-        train_accuracy_epoch[global_epoch] = np.mean(list(train_accuracy.values()))
-        val_accuracy_epoch[global_epoch] = np.mean(list(val_accuracy.values()))
-        global_epoch += 1
-    return model, train_loss_epoch, val_loss_epoch, train_accuracy_epoch, val_accuracy_epoch
+    return model, train_loss, val_loss, train_accuracy, val_accuracy
 
 
 # Load dataset
@@ -102,7 +91,7 @@ X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_binary_dataset(
     category1, category2, validation_percentage)
 
 # hyperparameters
-num_epochs = 500
+num_epochs = 50
 learning_rate = 0.2
 batch_size = 128
 l2_reg_lambda = 0
