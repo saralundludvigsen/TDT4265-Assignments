@@ -59,7 +59,6 @@ class BinaryModel:
             y: output of model with shape [batch size, 1]
         """
         # Sigmoid
-        #temp = self.w.dot(X.transpose())
         size = X.shape[0]
         y = np.ones((size,1))
         temp = np.dot(self.w.transpose(), X.transpose()).transpose()

@@ -38,6 +38,9 @@ def train(
     train_accuracy = {}
     val_accuracy = {}
     model = BinaryModel(l2_reg_lambda)
+    X_train = pre_process_images(X_train)
+    X_test = pre_process_images(X_test)
+    X_val = pre_process_images(X_val)
 
     global_step = 0
     for epoch in range(num_epochs):
