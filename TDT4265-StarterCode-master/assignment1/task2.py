@@ -7,6 +7,7 @@ np.random.seed(0)
 def calc_L2_len(model: BinaryModel) -> float:
     return (np.linalg.norm(model.w, ord=2))**2
 
+
 def calculate_accuracy(X: np.ndarray, targets: np.ndarray, model: BinaryModel) -> float: 
     """
     Args:
@@ -117,6 +118,7 @@ model2, train_loss2, val_loss2, train_accuracy2, val_accuracy2 = train(
     learning_rate=learning_rate,
     batch_size=batch_size,
     l2_reg_lambda=0.01)
+
 model3, train_loss3, val_loss3, train_accuracy3, val_accuracy3 = train(
     num_epochs=num_epochs,
     learning_rate=learning_rate,
@@ -169,7 +171,7 @@ utils.plot_loss(val_accuracy3, "Validation Accuracy, l = 0.001")
 plt.legend()
 plt.savefig("binary_train_accuracy_task3b.png")
 plt.show()
-'''
+
 plt.figure(4)
 objects = ('1', '0.1', '0.01','0.001')
 y_pos = np.arange(len(objects))
@@ -178,4 +180,28 @@ plt.bar(y_pos, weights, tick_label=objects)
 plt.ylabel("L2")
 plt.xlabel("lambda")
 plt.savefig("binary_train_task3c.png")
+plt.show()
+'''
+plt.figure(5)
+plt.subplots_adjust(hspace=0.3)
+plt.subplot(221)
+plt.imshow(255*(model.w[0:-1].reshape(28,28)),cmap="ocean")
+plt.title("lambda = 1")
+plt.colorbar()
+
+plt.subplot(222)
+plt.imshow(255*(model1.w[0:-1].reshape(28,28)),cmap="ocean")
+plt.title("lambda = 0.1")
+plt.colorbar()
+
+plt.subplot(223)
+plt.imshow(255*(model2.w[0:-1].reshape(28,28)),cmap="ocean")
+plt.title("lambda = 0.01")
+plt.colorbar()
+
+plt.subplot(224)
+plt.imshow(255*(model3.w[0:-1].reshape(28,28)),cmap="ocean")
+plt.title("lambda = 0.001")
+plt.colorbar()
+plt.savefig("binary_train_task3d.png")
 plt.show()
