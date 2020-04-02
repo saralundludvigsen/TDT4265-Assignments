@@ -130,6 +130,7 @@ plt.figure(1)
 utils.plot_loss(train_accuracy, "Training Accuracy")
 utils.plot_loss(val_accuracy, "Validation Accuracy")
 plt.legend()
+plt.savefig("softmax_train_accuracy.png")
 plt.show()
 
 #Plot weight image
