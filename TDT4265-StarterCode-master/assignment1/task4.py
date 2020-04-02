@@ -126,7 +126,7 @@ plt.show()
 
 # Plot accuracy
 plt.figure(1)
-#plt.ylim([0.8, .95])
+plt.ylim([0.4, .95])
 utils.plot_loss(train_accuracy, "Training Accuracy")
 utils.plot_loss(val_accuracy, "Validation Accuracy")
 plt.legend()
