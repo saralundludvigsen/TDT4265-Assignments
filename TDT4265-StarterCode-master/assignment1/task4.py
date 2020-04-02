@@ -133,7 +133,6 @@ plt.legend()
 plt.show()
 
 #Plot weight image
-
 fig, axs = plt.subplots(2,5, figsize=(15, 6), facecolor='w', edgecolor='k')
 fig.subplots_adjust(hspace = .5, wspace=.001)
 axs = axs.ravel()
