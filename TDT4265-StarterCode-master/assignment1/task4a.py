@@ -1,5 +1,6 @@
 import numpy as np
 import utils
+import math
 from task2a import pre_process_images
 np.random.seed(1)
 
@@ -14,18 +15,22 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
     assert targets.shape == outputs.shape,\
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
+    
     ce = targets * np.log(outputs)
-    raise NotImplementedError
+    ce = np.sum(ce, axis=0)
+    ce = np.sum(ce)
+    ce = -(1/(targets.shape[0]*targets.shape[1]))*ce
+    return ce
 
 
 class SoftmaxModel:
 
     def __init__(self, l2_reg_lambda: float):
         # Define number of input nodes
-        self.I = None
+        self.I = 785
 
         # Define number of output nodes
-        self.num_outputs = None
+        self.num_outputs = 10
         self.w = np.zeros((self.I, self.num_outputs))
         self.grad = None
 
@@ -38,7 +43,15 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        return None
+        Z = np.array(0)
+        Z = np.matmul(X, self.w).transpose() # Z.shape = (num_outputs, batch size)
+
+        eZ = np.array(Z.shape)
+        eZ = np.exp(Z)
+        test = np.sum(eZ, axis=0)
+        eZ /= np.sum(eZ, axis=0, keepdims=True)
+        output = eZ.transpose() #eZ.shape = (batch size, num_outputs)
+        return output
 
     def backward(self, X: np.ndarray, outputs: np.ndarray, targets: np.ndarray) -> None:
         """
@@ -53,6 +66,11 @@ class SoftmaxModel:
         assert self.grad.shape == self.w.shape,\
              f"Grad shape: {self.grad.shape}, w: {self.w.shape}"
 
+        Z = np.array(0)
+        Z = np.matmul(X.transpose(),(targets - outputs)) #Z.shape = (785, num_outputs)
+
+        self.grad = - Z  / (targets.shape[0] * targets.shape[1]) + 2*self.l2_reg_lambda*self.w
+
     def zero_grad(self) -> None:
         self.grad = None
 
@@ -65,7 +83,9 @@ def one_hot_encode(Y: np.ndarray, num_classes: int):
     Returns:
         Y: shape [Num examples, num classes]
     """
-    raise NotImplementedError
+    encoded = np.zeros((Y.size, num_classes))
+    encoded[np.arange(Y.size), Y.squeeze()] = 1
+    return encoded
 
 
 def gradient_approximation_test(model: SoftmaxModel, X: np.ndarray, Y: np.ndarray):
@@ -75,7 +95,7 @@ def gradient_approximation_test(model: SoftmaxModel, X: np.ndarray, Y: np.ndarra
     """
     epsilon = 1e-2
     for i in range(model.w.shape[0]):
-        for j in range(model.w.shape[1]):    
+        for j in range(model.w.shape[1]): 
             orig = model.w[i, j].copy()
             model.w[i, j] = orig + epsilon
             logits = model.forward(X)

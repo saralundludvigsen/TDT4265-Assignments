@@ -67,9 +67,8 @@ class BinaryModel:
         size = X.shape[0]
         y = np.ones((size,1))
         temp = np.dot(self.w.transpose(), X.transpose()).transpose()
-        
+
         for index in range(0, len(y)):
-            #print("math.exp(-1*temp[index]): ", math.exp(-1*temp[index]))
             y[index] = 1/(1 + math.exp(-1*temp[index]))
         return y
 
@@ -122,12 +121,12 @@ def gradient_approximation_test(model: BinaryModel, X: np.ndarray, Y: np.ndarray
 
 
 if __name__ == "__main__":
+
     category1, category2 = 2, 3
     X_train, Y_train, *_ = utils.load_binary_dataset(category1, category2, 0.1)
     X_train = pre_process_images(X_train)
     assert X_train.shape[1] == 785,\
         f"Expected X_train to have 785 elements per image. Shape was: {X_train.shape}"
-
     # Simple test for forward pass. Note that this does not cover all errors!
     model = BinaryModel(0.0)
     logits = model.forward(X_train)
