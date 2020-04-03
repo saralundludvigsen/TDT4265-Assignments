@@ -1,6 +1,7 @@
 import numpy as np
 import utils
 import typing
+import math
 np.random.seed(1)
 
 
@@ -13,6 +14,11 @@ def pre_process_images(X: np.ndarray):
     """
     assert X.shape[1] == 784,\
         f"X.shape[1]: {X.shape[1]}, should be 784"
+
+    global mean, std
+    X = np.divide(X,255)
+    X = (X-(mean/255))/(std/255)
+    X = np.insert(X, 0, 1, axis=1)
     return X
 
 
@@ -26,7 +32,18 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
     assert targets.shape == outputs.shape,\
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
-    raise NotImplementedError
+    y_hat = outputs
+    y = targets 
+    N = y_hat.shape[0]
+    c = 0
+    for n in range(0,N):
+        if y_hat[n] > 0.9999999:
+            y_hat[n] = 0.9999999
+        if y_hat[n] <= 0.0000001:
+            y_hat[n] = 0.0000001
+        c += y[n]*math.log(y_hat[n]) + (1-y[n])*math.log(1-y_hat[n])
+    c = -1/N*c
+    return c
 
 
 class SoftmaxModel:
@@ -38,7 +55,7 @@ class SoftmaxModel:
                  use_improved_weight_init: bool  # Task 3c hyperparameter
                  ):
         # Define number of input nodes
-        self.I = None
+        self.I = 785
         self.use_improved_sigmoid = use_improved_sigmoid
 
         # Define number of output nodes
@@ -64,7 +81,19 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        return None
+        Z = np.array(0)
+        print("SHAPE X:     ", X.shape, "   TYPE X:     ", type(X))
+        print("SHAPE WS0:    ", self.ws[0].shape, "   TYPE WS0:     ", type(self.ws[0]))
+        print("SHAPE WS1:    ", self.ws[1].shape, "   TYPE WS1:     ", type(self.ws[1]))
+        print("SHAPE Z:     ", Z.shape, "   TYPE Z:     ", type(Z))
+        #print("!!! WS:\n", self.ws)
+        Z = np.matmul(X, self.ws).transpose() # Z.shape = (num_outputs, batch size)
+
+        eZ = np.array(Z.shape)
+        eZ = np.exp(Z)
+        eZ /= np.sum(eZ, axis=0, keepdims=True)
+        output = eZ.transpose() #eZ.shape = (batch size, num_outputs)
+        return output
 
     def backward(self, X: np.ndarray, outputs: np.ndarray,
                  targets: np.ndarray) -> None:
@@ -96,7 +125,9 @@ def one_hot_encode(Y: np.ndarray, num_classes: int):
     Returns:
         Y: shape [Num examples, num classes]
     """
-    raise NotImplementedError
+    encoded = np.zeros((Y.size, num_classes))
+    encoded[np.arange(Y.size), Y.squeeze()] = 1
+    return encoded
 
 
 def gradient_approximation_test(
@@ -112,6 +143,7 @@ def gradient_approximation_test(
                 orig = model.ws[layer_idx][i, j].copy()
                 model.ws[layer_idx][i, j] = orig + epsilon
                 logits = model.forward(X)
+                print("TYPE:", type(logits))
                 cost1 = cross_entropy_loss(Y, logits)
                 model.ws[layer_idx][i, j] = orig - epsilon
                 logits = model.forward(X)
@@ -140,6 +172,8 @@ if __name__ == "__main__":
         f"Expected the vector to be [0,0,0,1,0,0,0,0,0,0], but got {Y}"
 
     X_train, Y_train, *_ = utils.load_full_mnist(0.1)
+    mean = np.mean(X_train)
+    std = np.std(X_train)
     X_train = pre_process_images(X_train)
     Y_train = one_hot_encode(Y_train, 10)
     assert X_train.shape[1] == 785,\
@@ -156,5 +190,4 @@ if __name__ == "__main__":
     Y_train = Y_train[:100]
     for layer_idx, w in enumerate(model.ws):
         model.ws[layer_idx] = np.random.uniform(-1, 1, size=w.shape)
-
     gradient_approximation_test(model, X_train, Y_train)
