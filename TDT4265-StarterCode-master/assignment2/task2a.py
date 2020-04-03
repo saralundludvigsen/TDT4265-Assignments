@@ -4,6 +4,12 @@ import typing
 import math
 np.random.seed(1)
 
+def sigmoid(x: np.ndarray):
+    return 1 / (1 + np.exp(-x))
+
+def softmax(a: np.ndarray):
+    a_exp = np.exp(a)
+    return a_exp / a_exp.sum(axis=1, keepdims=True)
 
 def pre_process_images(X: np.ndarray):
     """
@@ -34,15 +40,7 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
     y_hat = outputs
     y = targets 
-    N = y_hat.shape[0]
-    c = 0
-    for n in range(0,N):
-        if y_hat[n] > 0.9999999:
-            y_hat[n] = 0.9999999
-        if y_hat[n] <= 0.0000001:
-            y_hat[n] = 0.0000001
-        c += y[n]*math.log(y_hat[n]) + (1-y[n])*math.log(1-y_hat[n])
-    c = -1/N*c
+    c = -y*np.log(y_hat)
     return c
 
 
@@ -81,18 +79,10 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        Z = np.array(0)
-        print("SHAPE X:     ", X.shape, "   TYPE X:     ", type(X))
-        print("SHAPE WS0:    ", self.ws[0].shape, "   TYPE WS0:     ", type(self.ws[0]))
-        print("SHAPE WS1:    ", self.ws[1].shape, "   TYPE WS1:     ", type(self.ws[1]))
-        print("SHAPE Z:     ", Z.shape, "   TYPE Z:     ", type(Z))
-        #print("!!! WS:\n", self.ws)
-        Z = np.matmul(X, self.ws).transpose() # Z.shape = (num_outputs, batch size)
-
-        eZ = np.array(Z.shape)
-        eZ = np.exp(Z)
-        eZ /= np.sum(eZ, axis=0, keepdims=True)
-        output = eZ.transpose() #eZ.shape = (batch size, num_outputs)
+        z_j = np.matmul(X,self.ws[0])
+        a_j = sigmoid(z_j)
+        z_k = np.matmul(a_j,self.ws[1])
+        output = softmax(z_k)
         return output
 
     def backward(self, X: np.ndarray, outputs: np.ndarray,
