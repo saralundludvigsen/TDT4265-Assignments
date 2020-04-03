@@ -103,6 +103,15 @@ class SoftmaxModel:
             assert grad.shape == w.shape,\
                 f"Expected the same shape. Grad shape: {grad.shape}, w: {w.shape}."
 
+        z_j = np.matmul(X,self.ws[0])
+        print("sigmoid(z_j).shape:  ", sigmoid(z_j).shape)
+        print("1-sigmoid(z_j).shape:", (1-sigmoid(z_j)).shape)
+        df = sigmoid(z_j)*(1-sigmoid(z_j))
+        print("df:  ", df.shape)
+        gamma = np.diag(df)
+        self.grads[0] = -(targets - outputs)
+        self.grads[1] = np.matmul(gamma,ws[0],self.grad[0])
+
     def zero_grad(self) -> None:
         self.grads = [None for i in range(len(self.ws))]
 
