@@ -52,6 +52,7 @@ def train(
     val_loss = {}
     train_accuracy = {}
     val_accuracy = {}
+    momentum = [0 for i in range(len(model.grads))]
 
     global_step = 0
     for epoch in range(num_epochs):
@@ -65,8 +66,19 @@ def train(
 
             y_hat = model.forward(X_batch)
             model.backward(X_batch, y_hat, Y_batch)
-            model.ws[0] += -1*learning_rate*model.grads[0]
-            model.ws[1] += -1*learning_rate*model.grads[1]
+
+            if use_momentum == True:
+                momentum[0] = (1-momentum_gamma)*model.grads[0] + momentum_gamma*momentum[0]
+                momentum[1] = (1-momentum_gamma)*model.grads[1] + momentum_gamma*momentum[1]
+                model.ws[0] += -1*learning_rate*(momentum[0])
+                model.ws[1] += -1*learning_rate*(momentum[1])
+
+                '''
+                momentum(k+1) = gamma*momentum(k) + (1-gamma)*model.grads(k)
+                '''
+            else:
+                model.ws[0] += -1*learning_rate*model.grads[0]
+                model.ws[1] += -1*learning_rate*model.grads[1]
 
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
@@ -109,7 +121,7 @@ if __name__ == "__main__":
     # Settings for task 3. Keep all to false for task 2.
     use_shuffle = False
     use_improved_sigmoid = False
-    use_improved_weight_init = True
+    use_improved_weight_init = False
     use_momentum = False
 
     model = SoftmaxModel(
