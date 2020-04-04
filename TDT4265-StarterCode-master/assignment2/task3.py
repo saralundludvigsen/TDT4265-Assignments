@@ -2,7 +2,7 @@ import numpy as np
 import utils
 import matplotlib.pyplot as plt
 import typing
-from task2a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
+from task3a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
 np.random.seed(0)
 
 def shuffle_in_unison(a, b):
