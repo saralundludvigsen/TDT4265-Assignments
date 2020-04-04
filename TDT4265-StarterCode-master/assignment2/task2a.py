@@ -83,7 +83,7 @@ class SoftmaxModel:
         for size in self.neurons_per_layer:
             w_shape = (prev, size)
             print("Initializing weight to shape:", w_shape)
-            w = np.zeros(w_shape)
+            w = np.random.uniform(-1,1,(w_shape))            
             self.ws.append(w)
             prev = size
         self.grads = [0 for i in range(len(self.ws))]
@@ -172,7 +172,6 @@ def gradient_approximation_test(
                 model.backward(X, logits, Y)
                 difference = gradient_approximation - \
                     model.grads[layer_idx][i, j]
-                print( "DIFFERENCE:     ", difference)
                 assert abs(difference) <= epsilon**2,\
                     f"Calculated gradient is incorrect. " \
                     f"Layer IDX = {layer_idx}, i={i}, j={j}.\n" \

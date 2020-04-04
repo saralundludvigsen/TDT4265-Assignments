@@ -48,6 +48,10 @@ def train(
             end = start + batch_size
             X_batch, Y_batch = X_train[start:end], Y_train[start:end]
 
+            y_hat = model.forward(X_batch)
+            model.backward(X_batch, y_hat, Y_batch)
+            model.ws += -1*learning_rate*model.grads
+
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
             if (global_step % num_steps_per_val) == 0:
