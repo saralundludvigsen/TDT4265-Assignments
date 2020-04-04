@@ -55,8 +55,8 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     ce = targets * np.log(outputs)
     ce = np.sum(ce, axis=0)
     ce = np.sum(ce)
-    ce = -(1/(targets.shape[0]*targets.shape[1]))*ce
-    return ce
+    ce = (1/(targets.shape[0]*targets.shape[1]))*ce
+    return -1*ce
 
 
 class SoftmaxModel:
@@ -121,7 +121,8 @@ class SoftmaxModel:
         d_k = -(targets - outputs) #(100x10)
         grad_1 = np.matmul(self.a_j.T, d_k)
     
-        df = 1.14393*(np.sech((2/3)*self.a_j))
+        df = 1.7159*2.0 / (3.0*(np.cosh(((2.0/3.0)*self.a_j))**2))
+        
         temp = self.ws[1].dot(d_k.T) #(64x100)
         d_j = df.T*temp #(64x100)
         grad_0 = np.matmul(X.T, d_j.T)
@@ -153,7 +154,7 @@ def gradient_approximation_test(
         Numerical approximation for gradients. Should not be edited. 
         Details about this test is given in the appendix in the assignment.
     """
-    epsilon = 1e-3
+    epsilon = 1*e-3
     for layer_idx, w in enumerate(model.ws):
         for i in range(w.shape[0]):
             for j in range(w.shape[1]):
