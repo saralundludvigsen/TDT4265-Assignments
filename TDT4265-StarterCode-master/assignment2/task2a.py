@@ -18,6 +18,12 @@ class Layer:
 def sigmoid(x: np.ndarray):
     return 1 / (1 + np.exp(-x))
 
+def improved_sigmoid(x: np.ndarray):
+    return 1.7159*np.tanh((2/3)*x)
+
+def improved_sigmoid_derivative(x: np.ndarray):
+    return 1.7159*2.0 / (3.0*(np.cosh(((2.0/3.0)*x))**2))
+
 def softmax(a: np.ndarray):
     a_exp = np.exp(a)
     return a_exp / a_exp.sum(axis=1, keepdims=True)
@@ -100,7 +106,10 @@ class SoftmaxModel:
             y: output of model with shape [batch size, num_outputs]
         """
         self.z_j = np.matmul(X,self.ws[0]) #(100,64)
-        self.a_j = sigmoid(self.z_j) #(100,64)
+        if self.use_improved_sigmoid == True:
+            self.a_j = improved_sigmoid(self.z_j)
+        else:
+            self.a_j = sigmoid(self.z_j) #(100,64)
         z_k = np.matmul(self.a_j,self.ws[1]) #(100,10)
         output = softmax(z_k) #(100,10)
         return output
@@ -120,8 +129,13 @@ class SoftmaxModel:
 
         d_k = -(targets - outputs) #(100x10)
         grad_1 = np.matmul(self.a_j.T, d_k)
-    
-        df = self.a_j*(1-self.a_j) #(100x64)
+
+        df = None
+        if self.use_improved_sigmoid == True:
+            df = improved_sigmoid_derivative(self.a_j)
+        else:
+            df = self.a_j*(1-self.a_j) #(100x64)
+
         temp = self.ws[1].dot(d_k.T) #(64x100)
         d_j = df.T*temp #(64x100)
         grad_0 = np.matmul(X.T, d_j.T)

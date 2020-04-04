@@ -5,6 +5,11 @@ import typing
 from task2a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
 np.random.seed(0)
 
+def shuffle_in_unison(a, b):
+    state = np.random.get_state()
+    a = np.random.shuffle(a)
+    np.random.set_state(state)
+    b = np.random.shuffle(b)
 
 def calculate_accuracy(X: np.ndarray, targets: np.ndarray,
                        model: SoftmaxModel) -> float:
@@ -50,6 +55,9 @@ def train(
 
     global_step = 0
     for epoch in range(num_epochs):
+        # Shuffling before next epoch
+        if use_shuffle == True:
+            shuffle_in_unison(X_train, Y_train)
         for step in range(num_batches_per_epoch):
             start = step * batch_size
             end = start + batch_size
@@ -99,8 +107,8 @@ if __name__ == "__main__":
     momentum_gamma = .9  # Task 3 hyperparameter
 
     # Settings for task 3. Keep all to false for task 2.
-    use_shuffle = False
-    use_improved_sigmoid = False
+    use_shuffle = True
+    use_improved_sigmoid = True
     use_improved_weight_init = False
     use_momentum = False
 
