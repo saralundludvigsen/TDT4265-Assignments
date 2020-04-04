@@ -16,7 +16,14 @@ def calculate_accuracy(X: np.ndarray, targets: np.ndarray,
     Returns:
         Accuracy (float)
     """
-    accuracy = 0
+    number_of_predictions = X.shape[0]
+    number_of_rights = 0
+    y_hat = model.forward(X)
+    for i in range (0, number_of_predictions):
+        y_hat[i] = np.around(y_hat[i])
+        if np.array_equal(y_hat[i],targets[i]):
+            number_of_rights += 1
+    accuracy = number_of_rights/number_of_predictions
     return accuracy
 
 
@@ -56,10 +63,10 @@ def train(
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
             if (global_step % num_steps_per_val) == 0:
-                _val_loss = 0
+                _val_loss = cross_entropy_loss(Y_val, model.forward(X_val))
                 val_loss[global_step] = _val_loss
 
-                _train_loss = 0
+                _train_loss = cross_entropy_loss(Y_batch, y_hat)
                 train_loss[global_step] = _train_loss
 
                 train_accuracy[global_step] = calculate_accuracy(
@@ -128,7 +135,7 @@ if __name__ == "__main__":
     # Plot loss
     plt.figure(figsize=(20, 8))
     plt.subplot(1, 2, 1)
-    plt.ylim([0.1, .5])
+    plt.ylim([0.0, .5])
     utils.plot_loss(train_loss, "Training Loss")
     utils.plot_loss(val_loss, "Validation Loss")
     plt.xlabel("Number of gradient steps")
@@ -136,7 +143,7 @@ if __name__ == "__main__":
     plt.legend()
     plt.subplot(1, 2, 2)
     # Plot accuracy
-    plt.ylim([0.9, 1.0])
+    plt.ylim([0.75, 1.0])
     utils.plot_loss(train_accuracy, "Training Accuracy")
     utils.plot_loss(val_accuracy, "Validation Accuracy")
     plt.legend()
