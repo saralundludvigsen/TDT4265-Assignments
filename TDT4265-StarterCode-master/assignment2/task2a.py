@@ -25,7 +25,7 @@ def softmax(a: np.ndarray):
 def Gamma_d(z: np.ndarray):
     return df = sigmoid(z)*(1-sigmoid(z))
 '''
-def pre_process_images(X: np.ndarray):
+def pre_process_images(X: np.ndarray, mean: float, std:float):
     """
     Args:
         X: images of shape [batch size, 784] in the range (0, 255)
@@ -35,7 +35,6 @@ def pre_process_images(X: np.ndarray):
     assert X.shape[1] == 784,\
         f"X.shape[1]: {X.shape[1]}, should be 784"
 
-    global mean, std
     X = np.insert(X, 0, 1, axis=1)
     
     X = (X-(mean))/(std)
@@ -191,7 +190,7 @@ if __name__ == "__main__":
     X_train, Y_train, *_ = utils.load_full_mnist(0.1)
     mean = np.mean(X_train)
     std = np.std(X_train)
-    X_train = pre_process_images(X_train)
+    X_train = pre_process_images(X_train, mean, std)
     Y_train = one_hot_encode(Y_train, 10)
     assert X_train.shape[1] == 785,\
         f"Expected X_train to have 785 elements per image. Shape was: {X_train.shape}"

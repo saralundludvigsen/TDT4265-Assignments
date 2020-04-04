@@ -50,7 +50,8 @@ def train(
 
             y_hat = model.forward(X_batch)
             model.backward(X_batch, y_hat, Y_batch)
-            model.ws += -1*learning_rate*model.grads
+            model.ws[0] += -1*learning_rate*model.grads[0]
+            model.ws[1] += -1*learning_rate*model.grads[1]
 
             # Track train / validation loss / accuracy
             # every time we progress 20% through the dataset
@@ -75,7 +76,14 @@ if __name__ == "__main__":
     validation_percentage = 0.2
     X_train, Y_train, X_val, Y_val, X_test, Y_test = utils.load_full_mnist(
         validation_percentage)
-
+    mean = np.mean(X_train)
+    std = np.std(X_train)
+    X_train = pre_process_images(X_train, mean, std)
+    X_test = pre_process_images(X_test, mean, std)
+    X_val = pre_process_images(X_val, mean, std)
+    Y_train = one_hot_encode(Y_train, 10)
+    Y_val = one_hot_encode(Y_val, 10)
+    Y_test = one_hot_encode(Y_test, 10)
     # Hyperparameters
     num_epochs = 20
     learning_rate = .1
