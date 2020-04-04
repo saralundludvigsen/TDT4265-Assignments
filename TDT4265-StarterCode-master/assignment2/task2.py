@@ -149,5 +149,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
-    plt.savefig("softmax_train_graph.png")
+    plt.savefig("softmax_train_graph_2.png")
     plt.show()

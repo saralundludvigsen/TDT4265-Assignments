@@ -5,6 +5,12 @@ import typing
 from task2a import cross_entropy_loss, SoftmaxModel, one_hot_encode, pre_process_images
 np.random.seed(0)
 
+def shuffle_in_unison(a, b):
+    state = np.random.get_state()
+    a = np.random.shuffle(a)
+    np.random.set_state(state)
+    b = np.random.shuffle(b)
+    #return a,b
 
 def calculate_accuracy(X: np.ndarray, targets: np.ndarray,
                        model: SoftmaxModel) -> float:
@@ -50,6 +56,9 @@ def train(
 
     global_step = 0
     for epoch in range(num_epochs):
+        # Task 3a
+        # Shuffling before next epoch
+        shuffle_in_unison(X_train, Y_train)
         for step in range(num_batches_per_epoch):
             start = step * batch_size
             end = start + batch_size
@@ -75,6 +84,7 @@ def train(
                     X_val, Y_val, model)
 
             global_step += 1
+        
     return model, train_loss, val_loss, train_accuracy, val_accuracy
 
 
@@ -149,5 +159,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
-    plt.savefig("softmax_train_graph.png")
+    plt.savefig("softmax_train_graph_3a.png")
     plt.show()
