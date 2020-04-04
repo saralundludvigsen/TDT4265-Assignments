@@ -4,13 +4,27 @@ import typing
 import math
 np.random.seed(1)
 
+SIGMOID = 1
+SOFTMAX = 2
+class Layer:
+    activation_function : int
+    w = np.array(0)
+    z = np.array(0)
+    a = np.array(0)
+    def __init__(self, activation_function=0, shape=(0)):
+        self.activation_function = activation_function
+        self.w = np.random.uniform(-1,1,shape)
+
 def sigmoid(x: np.ndarray):
     return 1 / (1 + np.exp(-x))
 
 def softmax(a: np.ndarray):
     a_exp = np.exp(a)
     return a_exp / a_exp.sum(axis=1, keepdims=True)
-
+'''
+def Gamma_d(z: np.ndarray):
+    return df = sigmoid(z)*(1-sigmoid(z))
+'''
 def pre_process_images(X: np.ndarray):
     """
     Args:
@@ -38,10 +52,11 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     """
     assert targets.shape == outputs.shape,\
         f"Targets shape: {targets.shape}, outputs: {outputs.shape}"
-    y_hat = outputs
-    y = targets 
-    c = -y*np.log(y_hat)
-    return c
+    ce = targets * np.log(outputs)
+    ce = np.sum(ce, axis=0)
+    ce = np.sum(ce)
+    ce = -1*ce
+    return ce
 
 
 class SoftmaxModel:
@@ -70,7 +85,12 @@ class SoftmaxModel:
             w = np.zeros(w_shape)
             self.ws.append(w)
             prev = size
-        self.grads = [None for i in range(len(self.ws))]
+        self.grads = [0 for i in range(len(self.ws))]
+
+        #define a_i and a_j
+        self.z_j = []
+        self.a_j = []
+
 
     def forward(self, X: np.ndarray) -> np.ndarray:
         """
@@ -79,10 +99,10 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        z_j = np.matmul(X,self.ws[0])
-        a_j = sigmoid(z_j)
-        z_k = np.matmul(a_j,self.ws[1])
-        output = softmax(z_k)
+        self.z_j = np.matmul(X,self.ws[0]) #(100,64)
+        self.a_j = sigmoid(self.z_j) #(100,64)
+        z_k = np.matmul(self.a_j,self.ws[1]) #(100,10)
+        output = softmax(z_k) #(100,10)
         return output
 
     def backward(self, X: np.ndarray, outputs: np.ndarray,
@@ -97,23 +117,21 @@ class SoftmaxModel:
             f"Output shape: {outputs.shape}, targets: {targets.shape}"
         # A list of gradients.
         # For example, self.grads[0] will be the gradient for the first hidden layer
-        self.grads = []
+
+        d_k = -(targets - outputs) #(100x10)
+        grad_1 = np.matmul(self.a_j.T, d_k)
+    
+        df = self.a_j*(1-self.a_j) #(100x64)
+        temp = self.ws[1].dot(d_k.T) #(64x100)
+        d_j = df.T*temp #(64x100)
+        grad_0 = np.matmul(X.T, d_j.T)
+
+        self.grads = [grad_0, grad_1]
+
 
         for grad, w in zip(self.grads, self.ws):
             assert grad.shape == w.shape,\
                 f"Expected the same shape. Grad shape: {grad.shape}, w: {w.shape}."
-
-        z_j = np.matmul(X,self.ws[0])
-        print("sigmoid(z_j).shape:  ", sigmoid(z_j).shape)
-        print("1-sigmoid(z_j).shape:", (1-sigmoid(z_j)).shape)
-        df = sigmoid(z_j)*(1-sigmoid(z_j))
-        print("df:  ", df.shape)
-        gamma = np.diag(df)
-        self.grads[0] = -(targets - outputs)
-        self.grads[1] = np.matmul(gamma,ws[0],self.grad[0])
-
-    def zero_grad(self) -> None:
-        self.grads = [None for i in range(len(self.ws))]
 
 
 def one_hot_encode(Y: np.ndarray, num_classes: int):
@@ -142,8 +160,10 @@ def gradient_approximation_test(
                 orig = model.ws[layer_idx][i, j].copy()
                 model.ws[layer_idx][i, j] = orig + epsilon
                 logits = model.forward(X)
+                print("logits.shape:    ", logits.shape)
                 print("TYPE:", type(logits))
                 cost1 = cross_entropy_loss(Y, logits)
+                print("cost1.shape:     ", cost1.shape)
                 model.ws[layer_idx][i, j] = orig - epsilon
                 logits = model.forward(X)
                 cost2 = cross_entropy_loss(Y, logits)
@@ -154,6 +174,8 @@ def gradient_approximation_test(
                 model.backward(X, logits, Y)
                 difference = gradient_approximation - \
                     model.grads[layer_idx][i, j]
+                print("GRADIENT AP:     ", gradient_approximation.shape)
+                print( "DIFFERENCE:     ", difference.shape)
                 assert abs(difference) <= epsilon**2,\
                     f"Calculated gradient is incorrect. " \
                     f"Layer IDX = {layer_idx}, i={i}, j={j}.\n" \
