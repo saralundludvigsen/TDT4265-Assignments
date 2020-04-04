@@ -36,9 +36,10 @@ def pre_process_images(X: np.ndarray):
         f"X.shape[1]: {X.shape[1]}, should be 784"
 
     global mean, std
-    X = np.divide(X,255)
-    X = (X-(mean/255))/(std/255)
     X = np.insert(X, 0, 1, axis=1)
+    
+    X = (X-(mean))/(std)
+    X = np.divide(X,255)
     return X
 
 
@@ -160,10 +161,7 @@ def gradient_approximation_test(
                 orig = model.ws[layer_idx][i, j].copy()
                 model.ws[layer_idx][i, j] = orig + epsilon
                 logits = model.forward(X)
-                print("logits.shape:    ", logits.shape)
-                print("TYPE:", type(logits))
                 cost1 = cross_entropy_loss(Y, logits)
-                print("cost1.shape:     ", cost1.shape)
                 model.ws[layer_idx][i, j] = orig - epsilon
                 logits = model.forward(X)
                 cost2 = cross_entropy_loss(Y, logits)
@@ -174,8 +172,7 @@ def gradient_approximation_test(
                 model.backward(X, logits, Y)
                 difference = gradient_approximation - \
                     model.grads[layer_idx][i, j]
-                print("GRADIENT AP:     ", gradient_approximation.shape)
-                print( "DIFFERENCE:     ", difference.shape)
+                print( "DIFFERENCE:     ", difference)
                 assert abs(difference) <= epsilon**2,\
                     f"Calculated gradient is incorrect. " \
                     f"Layer IDX = {layer_idx}, i={i}, j={j}.\n" \
