@@ -135,9 +135,9 @@ class SoftmaxModel:
 
         df = None
         if self.use_improved_sigmoid == True:
-            df = improved_sigmoid_derivative(self.a_j)
+            df = improved_sigmoid_derivative(self.z_j)
         else:
-            df = self.a_j*(1-self.a_j) #(100x64)
+            df = self.z_j*(1-self.z_j) #(100x64)
 
         temp = self.ws[1].dot(d_k.T) #(64x100)
         d_j = df.T*temp #(64x100)

@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     # Settings for task 3. Keep all to false for task 2.
     use_shuffle = False
-    use_improved_sigmoid = False
+    use_improved_sigmoid = True
     use_improved_weight_init = False
     use_momentum = False
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     use_shuffle = True
     use_improved_sigmoid = True
     use_improved_weight_init = True
-    use_momentum = False
+    use_momentum = True
 
     model1 = SoftmaxModel(
         neurons_per_layer,
@@ -196,6 +196,7 @@ if __name__ == "__main__":
     
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Cross Entropy Loss")
+    plt.title("Task 3e -  All improvements")
     plt.legend()
     plt.subplot(1, 2, 2)
     # Plot accuracy
@@ -204,8 +205,9 @@ if __name__ == "__main__":
     utils.plot_loss(val_accuracy, "Validation Accuracy No improvements")
     utils.plot_loss(train_accuracy1, "Training Accuracy All improvements")
     utils.plot_loss(val_accuracy1, "Validation Accuracy All improvements")
+    plt.title("Task 3e -  All improvements")
     plt.legend()
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
-    plt.savefig("softmax_train_graph_2.png")
+    plt.savefig("A2_3e.png")
     plt.show()
