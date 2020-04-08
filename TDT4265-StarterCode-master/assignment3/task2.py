@@ -49,7 +49,7 @@ def compute_loss_and_accuracy(
 
     average_loss = average_loss/total_steps
     accuracy = correct/total_images
-    
+
     return average_loss, accuracy
 
 
@@ -99,15 +99,16 @@ class ExampleModel(nn.Module):
                 kernel_size=5,
                 stride=1,
                 padding=2
-            ), 
+            )
+            , 
             nn.ReLU(),
             nn.MaxPool2d(
                 kernel_size=2,
                 stride=2
             )
         )
-        # The output of feature_extractor will be [batch_size, num_filters, 16, 16]
-        self.num_output_features = 32*32*32
+        # The output of feature_extractor will be [batch_size, num_filters, 4, 4]
+        self.num_output_features = 2048 # = 128*4*4
         # Initialize our last fully connected layer
         # Inputs all extracted features from the convolutional layers
         # Outputs num_classes predictions, 1 for each class.
@@ -128,14 +129,14 @@ class ExampleModel(nn.Module):
         batch_size = x.shape[0]
         out = x
         expected_shape = (batch_size, self.num_classes)
-        assert out.shape == (batch_size, self.num_classes),\
-            f"Expected output of forward pass to be: {expected_shape}, but got: {out.shape}"
         # Feature layers:
         out = self.feature_extractor(out)
         # Flattening:
         out = out.view(-1, self.num_output_features)
         # Fully-Connected layers
         out = self.classifier(out)
+        assert out.shape == (batch_size, self.num_classes),\
+            f"Expected output of forward pass to be: {expected_shape}, but got: {out.shape}"
         return out
 
 
@@ -182,6 +183,7 @@ class Trainer:
         self.TRAIN_LOSS = collections.OrderedDict()
         self.VALIDATION_ACC = collections.OrderedDict()
         self.TEST_ACC = collections.OrderedDict()
+        self.TRAIN_ACC = collections.OrderedDict()
 
         self.checkpoint_dir = pathlib.Path("checkpoints")
 
@@ -190,6 +192,14 @@ class Trainer:
             Computes the loss/accuracy for all three datasets.
             Train, validation and test.
         """
+        
+        # Compute for training set
+        _train_loss, train_acc = compute_loss_and_accuracy(
+            self.dataloader_train, self.model, self.loss_criterion
+        )
+        self.TRAIN_ACC[self.global_step] = train_acc
+
+        # Compute for validation set
         self.model.eval()
         validation_loss, validation_acc = compute_loss_and_accuracy(
             self.dataloader_val, self.model, self.loss_criterion
@@ -304,6 +314,7 @@ def create_plots(trainer: Trainer, name: str):
     plt.legend()
     plt.subplot(1, 2, 2)
     plt.title("Accuracy")
+    #utils.plot_loss(trainer.TRAIN_ACC, label="Training Accuracy")
     utils.plot_loss(trainer.VALIDATION_ACC, label="Validation Accuracy")
     utils.plot_loss(trainer.TEST_ACC, label="Testing Accuracy")
     plt.legend()
@@ -328,3 +339,9 @@ if __name__ == "__main__":
     )
     trainer.train()
     create_plots(trainer, "task2")
+    print(
+        f"Train Accuracy: {trainer.TRAIN_ACC.popitem(last = True)}",
+        f"Test Accuracy: {trainer.TEST_ACC.popitem(last = True)},",
+        f"Validation Accuracy: {trainer.VALIDATION_ACC.popitem(last = True)}",
+        sep="\t")
+
