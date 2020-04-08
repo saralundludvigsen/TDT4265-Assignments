@@ -25,7 +25,9 @@ def compute_loss_and_accuracy(
     """
     average_loss = 0
     accuracy = 0
-
+    total_images = 0
+    total_steps = 0
+    correct = 0
     with torch.no_grad():
         for (X_batch, Y_batch) in dataloader:
             # Transfer images/labels to GPU VRAM, if possible
@@ -35,7 +37,19 @@ def compute_loss_and_accuracy(
             output_probs = model(X_batch)
 
             # Compute Loss and Accuracy
+            loss = loss_criterion(output_probs, Y_batch) # tensor[value, grad_fn]
 
+            # From the example in pytorch docs:
+            _, predicted = torch.max(output_probs.data, 1)
+            # Updating variables
+            total_images += Y_batch.size(0)
+            correct += (predicted == Y_batch).sum().item() 
+            average_loss += loss.item()
+            total_steps += 1
+
+    average_loss = average_loss/total_steps
+    accuracy = correct/total_images
+    
     return average_loss, accuracy
 
 
@@ -61,6 +75,35 @@ class ExampleModel(nn.Module):
                 kernel_size=5,
                 stride=1,
                 padding=2
+            ), 
+            nn.ReLU(), 
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            ),
+            nn.Conv2d(
+                in_channels=32, 
+                out_channels=64, 
+                kernel_size=5,
+                stride=1,
+                padding=2
+            ), 
+            nn.ReLU(),
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            ),
+            nn.Conv2d(
+                in_channels=64, 
+                out_channels=128, 
+                kernel_size=5,
+                stride=1,
+                padding=2
+            ), 
+            nn.ReLU(),
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
             )
         )
         # The output of feature_extractor will be [batch_size, num_filters, 16, 16]
@@ -71,7 +114,9 @@ class ExampleModel(nn.Module):
         # There is no need for softmax activation function, as this is
         # included with nn.CrossEntropyLoss
         self.classifier = nn.Sequential(
-            nn.Linear(self.num_output_features, num_classes),
+            nn.Linear(self.num_output_features, 64),
+            nn.ReLU(),
+            nn.Linear(64, num_classes)
         )
 
     def forward(self, x):
@@ -85,6 +130,12 @@ class ExampleModel(nn.Module):
         expected_shape = (batch_size, self.num_classes)
         assert out.shape == (batch_size, self.num_classes),\
             f"Expected output of forward pass to be: {expected_shape}, but got: {out.shape}"
+        # Feature layers:
+        out = self.feature_extractor(out)
+        # Flattening:
+        out = out.view(-1, self.num_output_features)
+        # Fully-Connected layers
+        out = self.classifier(out)
         return out
 
 
