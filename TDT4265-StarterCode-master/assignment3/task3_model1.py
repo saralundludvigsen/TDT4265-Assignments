@@ -49,7 +49,7 @@ def compute_loss_and_accuracy(
 
     average_loss = average_loss/total_steps
     accuracy = correct/total_images
-
+    
     return average_loss, accuracy
 
 
@@ -69,55 +69,86 @@ class ExampleModel(nn.Module):
         self.num_classes = num_classes
         # Define the convolutional layers
         self.feature_extractor = nn.Sequential(
+            # Layer block 1
             nn.Conv2d(
                 in_channels=image_channels,
                 out_channels=num_filters,
-                kernel_size=5,
+                kernel_size=3,
                 stride=1,
-                padding=2
+                padding=1
             ), 
+            nn.BatchNorm2d(32),
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=32,
+                out_channels=64,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ),
             nn.ReLU(), 
             nn.MaxPool2d(
                 kernel_size=2,
                 stride=2
             ),
+            # Layer block 2
             nn.Conv2d(
-                in_channels=32, 
-                out_channels=64, 
-                kernel_size=5,
+                in_channels=64, 
+                out_channels=128, 
+                kernel_size=3,
                 stride=1,
-                padding=2
+                padding=1
+            ), 
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=128, 
+                out_channels=128, 
+                kernel_size=3,
+                stride=1,
+                padding=1
             ), 
             nn.ReLU(),
             nn.MaxPool2d(
                 kernel_size=2,
                 stride=2
             ),
+            # Layer block 3
             nn.Conv2d(
-                in_channels=64, 
-                out_channels=128, 
-                kernel_size=5,
+                in_channels=128, 
+                out_channels=256, 
+                kernel_size=3,
                 stride=1,
-                padding=2
-            )
-            , 
+                padding=1
+            ), 
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=256, 
+                out_channels=256, 
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ),
             nn.ReLU(),
             nn.MaxPool2d(
                 kernel_size=2,
                 stride=2
             )
         )
-        # The output of feature_extractor will be [batch_size, num_filters, 4, 4]
-        self.num_output_features = 2048 # = 128*4*4
+        # The output of feature_extractor will be [batch_size, num_filters, 16, 16]
+        self.num_output_features = 4096
         # Initialize our last fully connected layer
         # Inputs all extracted features from the convolutional layers
         # Outputs num_classes predictions, 1 for each class.
         # There is no need for softmax activation function, as this is
         # included with nn.CrossEntropyLoss
         self.classifier = nn.Sequential(
-            nn.Linear(self.num_output_features, 64),
+            nn.Linear(self.num_output_features, 1024),
             nn.ReLU(),
-            nn.Linear(64, num_classes)
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+            nn.Linear(512, num_classes)
         )
 
     def forward(self, x):
@@ -192,7 +223,6 @@ class Trainer:
             Computes the loss/accuracy for all three datasets.
             Train, validation and test.
         """
-        
         # Compute for training set
         _train_loss, train_acc = compute_loss_and_accuracy(
             self.dataloader_train, self.model, self.loss_criterion
@@ -314,7 +344,6 @@ def create_plots(trainer: Trainer, name: str):
     plt.legend()
     plt.subplot(1, 2, 2)
     plt.title("Accuracy")
-    #utils.plot_loss(trainer.TRAIN_ACC, label="Training Accuracy")
     utils.plot_loss(trainer.VALIDATION_ACC, label="Validation Accuracy")
     utils.plot_loss(trainer.TEST_ACC, label="Testing Accuracy")
     plt.legend()
@@ -338,7 +367,7 @@ if __name__ == "__main__":
         dataloaders
     )
     trainer.train()
-    create_plots(trainer, "task2")
+    create_plots(trainer, "task3_model1")
     print(
         f"Train Accuracy: {trainer.TRAIN_ACC.popitem(last = True)}",
         f"Test Accuracy: {trainer.TEST_ACC.popitem(last = True)},",
@@ -347,4 +376,3 @@ if __name__ == "__main__":
         f"Test Loss: {trainer.TEST_LOSS.popitem(last = True)},",
         f"Validation Loss: {trainer.VALIDATION_LOSS.popitem(last = True)}",
         sep="\t")
-
