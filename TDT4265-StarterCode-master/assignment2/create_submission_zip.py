@@ -3,13 +3,9 @@ import zipfile
 
 # If you create other files, edit this list to include them in the .zip file.
 files_to_include = [
-    "task2.py",
     "task2a.py",
-    "task3.py",
-    "task3a.py",
     "task4c.py",
-    "utils.py",
-    "mnist.py"
+
 ]
 
 for filepath in files_to_include:

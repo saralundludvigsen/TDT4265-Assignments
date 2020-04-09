@@ -44,7 +44,7 @@ def pre_process_images(X: np.ndarray, mean: float, std:float):
     X = np.insert(X, 0, 1, axis=1)
     
     X = (X-(mean))/(std)
-    X = np.divide(X,255)
+    #X = np.divide(X,255)
     return X
 
 
@@ -61,7 +61,7 @@ def cross_entropy_loss(targets: np.ndarray, outputs: np.ndarray):
     ce = targets * np.log(outputs)
     ce = np.sum(ce, axis=0)
     ce = np.sum(ce)
-    ce = -(1/(targets.shape[0]*targets.shape[1]))*ce
+    ce = -(1/(targets.shape[0]))*ce
     return ce
 
 
@@ -84,21 +84,26 @@ class SoftmaxModel:
 
         # Initialize the weights
         self.ws = []
+        self.grads = []
         prev = self.I
         for size in self.neurons_per_layer:
             w_shape = (prev, size)
-            print("Initializing weight to shape:", w_shape)
+            grad_shape = (prev, size)
+            grad = np.random.uniform(-1,1,(grad_shape))
             if use_improved_weight_init == False:
                 w = np.random.uniform(-1,1,(w_shape))        
             else: 
                 w = np.random.normal(0, 1/(np.sqrt(w_shape[1])), w_shape)    
             self.ws.append(w)
-            prev = size
-        self.grads = [0 for i in range(len(self.ws))]
+            self.grads.append(grad)
 
-        #define a_i and a_j
-        self.z_j = []
-        self.a_j = []
+            prev = size
+
+        #define z, a and d
+        self.z = [[None] for i in range(len(self.neurons_per_layer))]
+        self.a = [[None] for i in range(len(self.neurons_per_layer)+1)]
+        self.d = [[None] for i in range(len(self.neurons_per_layer))]
+
 
 
     def forward(self, X: np.ndarray) -> np.ndarray:
@@ -108,13 +113,18 @@ class SoftmaxModel:
         Returns:
             y: output of model with shape [batch size, num_outputs]
         """
-        self.z_j = np.matmul(X,self.ws[0]) #(100,64)
-        if self.use_improved_sigmoid == True:
-            self.a_j = improved_sigmoid(self.z_j)
-        else:
-            self.a_j = sigmoid(self.z_j) #(100,64)
-        z_k = np.matmul(self.a_j,self.ws[1]) #(100,10)
-        output = softmax(z_k) #(100,10)
+        self.a[0] = X
+        self.z[0] = np.matmul(self.a[0],self.ws[0])
+        for i in range(1,len(self.neurons_per_layer),1):
+            if self.use_improved_sigmoid == True:
+                self.a[i] = improved_sigmoid(self.z[i-1])
+                self.z[i] = np.matmul(self.a[i],self.ws[i])
+            else:
+                self.a[i] = sigmoid(self.z[i-1])
+                self.z[i] = np.matmul(self.a[i],self.ws[i])
+
+        self.a[-1] = softmax(self.z[i])
+        output = self.a[-1]
         return output
 
     def backward(self, X: np.ndarray, outputs: np.ndarray,
@@ -127,23 +137,20 @@ class SoftmaxModel:
         """
         assert targets.shape == outputs.shape,\
             f"Output shape: {outputs.shape}, targets: {targets.shape}"
-        # A list of gradients.
-        # For example, self.grads[0] will be the gradient for the first hidden layer
 
-        d_k = -(targets - outputs) #(100x10)
-        grad_1 = np.matmul(self.a_j.T, d_k)
+        self.d[-1] = -(targets - outputs)
+        self.grads[-1] = np.matmul(self.a[-2].T, self.d[-1]) / X.shape[0]
 
-        df = None
-        if self.use_improved_sigmoid == True:
-            df = improved_sigmoid_derivative(self.z_j)
-        else:
-            df = self.z_j*(1-self.z_j) #(100x64)
+        for i in range(len(self.neurons_per_layer)-1,0,-1):
+            if self.use_improved_sigmoid == True:
+                df = improved_sigmoid_derivative(self.z[i-1])
+            else:
+                df = self.a[i]*(1-self.a[i])
 
-        temp = self.ws[1].dot(d_k.T) #(64x100)
-        d_j = df.T*temp #(64x100)
-        grad_0 = np.matmul(X.T, d_j.T)
+            temp = self.ws[i].dot(self.d[i].T)
+            self.d[i-1] = (df.T*temp).T
+            self.grads[i-1] = ((np.matmul( self.d[i-1].T, self.a[i-1])).T)/X.shape[0]
 
-        self.grads = [grad_0, grad_1]
 
 
         for grad, w in zip(self.grads, self.ws):

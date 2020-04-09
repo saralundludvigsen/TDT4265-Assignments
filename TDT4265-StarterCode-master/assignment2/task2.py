@@ -41,6 +41,7 @@ def train(
         # Task 3 hyperparameters,
         use_shuffle: bool,
         use_momentum: bool,
+        use_early_stopping: bool,
         momentum_gamma: float):
     X_train, Y_train, X_val, Y_val, X_test, Y_test = datasets
 
@@ -54,6 +55,11 @@ def train(
     val_accuracy = {}
     momentum = [0 for i in range(len(model.grads))]
 
+    #Variables used for early stopping
+    mean_val_loss = []
+    list_val_losses = []
+
+    global_loss_counter = 2
     global_step = 0
     for epoch in range(num_epochs):
         # Shuffling before next epoch
@@ -72,10 +78,6 @@ def train(
                 momentum[1] = (1-momentum_gamma)*model.grads[1] + momentum_gamma*momentum[1]
                 model.ws[0] += -1*learning_rate*(momentum[0])
                 model.ws[1] += -1*learning_rate*(momentum[1])
-
-                '''
-                momentum(k+1) = gamma*momentum(k) + (1-gamma)*model.grads(k)
-                '''
             else:
                 model.ws[0] += -1*learning_rate*model.grads[0]
                 model.ws[1] += -1*learning_rate*model.grads[1]
@@ -93,6 +95,18 @@ def train(
                     X_train, Y_train, model)
                 val_accuracy[global_step] = calculate_accuracy(
                     X_val, Y_val, model)
+                
+                #Early stopping
+                if use_early_stopping == True:
+                    list_val_losses.append(_val_loss)
+                    if global_loss_counter % 5 == 0:
+                        mean_val_loss.append(np.mean(list_val_losses))
+                        list_val_losses = [] 
+                        if global_loss_counter % 10 == 0:
+                            if mean_val_loss[0] < mean_val_loss[1]:
+                                return model, train_loss, val_loss, train_accuracy, val_accuracy
+                            mean_val_loss = []
+                    global_loss_counter += 1
 
             global_step += 1
     return model, train_loss, val_loss, train_accuracy, val_accuracy
@@ -115,17 +129,19 @@ if __name__ == "__main__":
     num_epochs = 20
     learning_rate = .1
     batch_size = 32
-    neurons_per_layer = [64, 10]
+    neurons_per_layer_1 = [64, 10]
+    neurons_per_layer_2 = [59, 59, 10]
     momentum_gamma = .9  # Task 3 hyperparameter
 
     # Settings for task 3. Keep all to false for task 2.
     use_shuffle = False
     use_improved_sigmoid = True
-    use_improved_weight_init = False
+    use_improved_weight_init = True
     use_momentum = False
+    use_early_stopping = False
 
     model = SoftmaxModel(
-        neurons_per_layer,
+        neurons_per_layer_1,
         use_improved_sigmoid,
         use_improved_weight_init)
     model, train_loss, val_loss, train_accuracy, val_accuracy = train(
@@ -136,6 +152,7 @@ if __name__ == "__main__":
         batch_size=batch_size,
         use_shuffle=use_shuffle,
         use_momentum=use_momentum,
+        use_early_stopping=use_early_stopping,
         momentum_gamma=momentum_gamma)
     print("Model 0")
     print("Final Train Cross Entropy Loss:",
@@ -151,14 +168,16 @@ if __name__ == "__main__":
           calculate_accuracy(X_val, Y_val, model))
     print("Final Test accuracy:",
           calculate_accuracy(X_test, Y_test, model))    
+    
     # 2nd plot
-    use_shuffle = True
+    use_shuffle = False
     use_improved_sigmoid = True
     use_improved_weight_init = True
-    use_momentum = True
+    use_momentum = False
+    use_early_stopping = False
 
     model1 = SoftmaxModel(
-        neurons_per_layer,
+        neurons_per_layer_2,
         use_improved_sigmoid,
         use_improved_weight_init)
     model1, train_loss1, val_loss1, train_accuracy1, val_accuracy1 = train(
@@ -169,6 +188,7 @@ if __name__ == "__main__":
         batch_size=batch_size,
         use_shuffle=use_shuffle,
         use_momentum=use_momentum,
+        use_early_stopping=use_early_stopping,
         momentum_gamma=momentum_gamma)
     print("Model 1")
     print("Final Train Cross Entropy Loss:",
@@ -188,26 +208,26 @@ if __name__ == "__main__":
     # Plot loss
     plt.figure(figsize=(20, 8))
     plt.subplot(1, 2, 1)
-    plt.ylim([0.0, .15])
-    utils.plot_loss(train_loss, "Training Loss No improvements")
-    utils.plot_loss(val_loss, "Validation Loss No improvements")
-    utils.plot_loss(train_loss1, "Training Loss All improvements")
-    utils.plot_loss(val_loss1, "Validation Loss All improvements")
+    plt.ylim([0.0, .6])
+    utils.plot_loss(train_loss, "Training Loss 1 hidden layer")
+    utils.plot_loss(val_loss, "Validation Loss 1 hidden layer")
+    utils.plot_loss(train_loss1, "Training Loss 2 hidden layers")
+    utils.plot_loss(val_loss1, "Validation Loss 2 hidden layers")
     
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Cross Entropy Loss")
-    plt.title("Task 3e -  All improvements")
+    plt.title("Task 4d, Loss")
     plt.legend()
     plt.subplot(1, 2, 2)
     # Plot accuracy
     plt.ylim([0.75, 1.0])
-    utils.plot_loss(train_accuracy, "Training Accuracy No improvements")
-    utils.plot_loss(val_accuracy, "Validation Accuracy No improvements")
-    utils.plot_loss(train_accuracy1, "Training Accuracy All improvements")
-    utils.plot_loss(val_accuracy1, "Validation Accuracy All improvements")
-    plt.title("Task 3e -  All improvements")
+    utils.plot_loss(train_accuracy, "Training Accuracy 1 hidden layer")
+    utils.plot_loss(val_accuracy, "Validation Accuracy 1 hidden layer")
+    utils.plot_loss(train_accuracy1, "Training Accuracy 2 hidden layers")
+    utils.plot_loss(val_accuracy1, "Validation Accuracy 2 hidden layers")
+    plt.title("Task 4d, Accuracy")
     plt.legend()
     plt.xlabel("Number of gradient steps")
     plt.ylabel("Accuracy")
-    plt.savefig("A2_3e.png")
+    plt.savefig("A2_4d.png")
     plt.show()
