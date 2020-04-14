@@ -88,7 +88,6 @@ def test_get_all_box_matches():
     res1, res2 = get_all_box_matches(b1, b2, 1)
     assert np.all(res1 == b1)
     assert np.all(res2 == b2)
-
     b2 = np.array([
         [0, 0, 1, 1],
         [0.25, 0.25, 1, 1]
@@ -108,6 +107,8 @@ def test_get_all_box_matches():
     res1, res2 = get_all_box_matches(np.array([]), np.array([]), 0.5)
     assert res1.size == 0
     assert res2.size == 0
+
+
 
 
 def test_calculate_individual_image_result():
@@ -130,7 +131,7 @@ def test_calculate_individual_image_result():
     ans1 = 2
     ans2 = 2
     ans3 = 2
-    res = calculate_individual_image_result(b1, b2, 0.5)
+    res = calculate_individual_image_result(b2, b1, 0.5)
 
     assert res["true_pos"] == ans1, "Expected {}, got: {}".format(
         ans1, res["true_pos"])
