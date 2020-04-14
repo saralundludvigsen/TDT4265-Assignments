@@ -54,6 +54,7 @@ class BasicModel(torch.nn.Module):
                 stride=1,
                 padding=1
             ), 
+            nn.BatchNorm2d(64),
             nn.ReLU(), 
             nn.Conv2d(
                 in_channels=64,
@@ -72,6 +73,7 @@ class BasicModel(torch.nn.Module):
                 stride=1,
                 padding=1
             ), 
+            nn.BatchNorm2d(128),
             nn.ReLU(), 
             nn.Conv2d(
                 in_channels=128,
@@ -90,6 +92,7 @@ class BasicModel(torch.nn.Module):
                 stride=1,
                 padding=1
             ), 
+            nn.BatchNorm2d(256),
             nn.ReLU(), 
             nn.Conv2d(
                 in_channels=256,
@@ -108,6 +111,7 @@ class BasicModel(torch.nn.Module):
                 stride=1,
                 padding=1
             ), 
+            nn.BatchNorm2d(128),
             nn.ReLU(), 
             nn.Conv2d(
                 in_channels=128,
@@ -126,6 +130,7 @@ class BasicModel(torch.nn.Module):
                 stride=1,
                 padding=1
             ), 
+            nn.BatchNorm2d(128),
             nn.ReLU(), 
             nn.Conv2d(
                 in_channels=128,
@@ -144,6 +149,7 @@ class BasicModel(torch.nn.Module):
                 stride=1,
                 padding=1
             ), 
+            nn.BatchNorm2d(128),
             nn.ReLU(), 
             nn.Conv2d(
                 in_channels=128,
