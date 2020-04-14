@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 
 
 class BasicModel(torch.nn.Module):
@@ -20,6 +21,146 @@ class BasicModel(torch.nn.Module):
         self.output_channels = output_channels
         image_channels = cfg.MODEL.BACKBONE.INPUT_CHANNELS
         self.output_feature_size = cfg.MODEL.PRIORS.FEATURE_MAPS
+
+        self.bank1 = nn.Sequential(
+            nn.Conv2d(
+                in_channels=image_channels,
+                out_channels=32,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            ),
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=32,
+                out_channels=64,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            ),
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=64,
+                out_channels=64,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=64,
+                out_channels=output_channels[0],
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
+        self.bank2 = nn.Sequential(
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=output_channels[0],
+                out_channels=128,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=128,
+                out_channels=output_channels[1],
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
+        self.bank3 = nn.Sequential(
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=output_channels[1],
+                out_channels=256,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=256,
+                out_channels=output_channels[2],
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
+        self.bank4 = nn.Sequential(
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=output_channels[2],
+                out_channels=128,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=128,
+                out_channels=output_channels[3],
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
+        self.bank5 = nn.Sequential(
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=output_channels[3],
+                out_channels=128,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=128,
+                out_channels=output_channels[4],
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
+        self.bank6 = nn.Sequential(
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=output_channels[4],
+                out_channels=128,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ), 
+            nn.ReLU(), 
+            nn.Conv2d(
+                in_channels=128,
+                out_channels=output_channels[5],
+                kernel_size=3,
+                stride=1,
+                padding=0
+            )
+        )
+        self.feature_extractor = nn.Sequential(
+            self.bank1,
+            self.bank2,
+            self.bank3,
+            self.bank4,
+            self.bank5,
+            self.bank6
+        )
     
     def forward(self, x):
         """
