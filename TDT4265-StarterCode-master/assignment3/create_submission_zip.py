@@ -4,7 +4,12 @@ import zipfile
 # If you create other files, edit this list to include them in the .zip file.
 files_to_include = [
     "task2.py",
+    "task3_model1.py",
+    "task3_model2.py",
+    "task3_model3d.py",
+    "task3c.py",
     "task2_train.ipynb",
+    "task4a.py",
     "task4b.py",
     "utils.py",
     "dataloaders.py"
