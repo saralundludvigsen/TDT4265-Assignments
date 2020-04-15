@@ -182,12 +182,14 @@ class BasicModel(torch.nn.Module):
             shape(-1, output_channels[0], 38, 38),
         """
         out_features = [self.bank1, self.bank2, self.bank3, self.bank4, self.bank5, self.bank6]
+        feature_output = x # remember that each feature output from one bank needs to be passed over to the next bank
+        for idx, feature in enumerate(out_features):
+            feature_output = feature(feature_output)
+            out_features[idx] = feature_output
+        
         for idx, feature in enumerate(out_features):
             out_channel = self.output_channels[idx]
-            x = feature(x)
-            feature_map_size = x.shape[2]
-            feature = x
-            out_features[idx] = feature
+            feature_map_size = feature.shape[2]
             expected_shape = (out_channel, feature_map_size, feature_map_size)
             assert feature.shape[1:] == expected_shape, \
                 f"Expected shape: {expected_shape}, got: {feature.shape[1:]} at output IDX: {idx}"
