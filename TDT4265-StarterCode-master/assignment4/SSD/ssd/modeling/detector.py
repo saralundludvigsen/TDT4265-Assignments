@@ -44,3 +44,12 @@ def build_backbone(cfg):
                 "https://s3.amazonaws.com/amdegroot-models/vgg16_reducedfc.pth")
             model.init_from_pretrain(state_dict)
         return model
+    if backbone_name == "googlenet":
+        model = GoogleNet(cfg)
+        return model
+    if backbone_name == "densenet":
+        model = DenseNet(cfg)
+        return model
+    if backbone_name == "resnext":
+        model = ResNext(cfg)
+        return model
